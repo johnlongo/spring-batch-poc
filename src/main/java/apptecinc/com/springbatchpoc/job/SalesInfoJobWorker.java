@@ -33,7 +33,7 @@ public class SalesInfoJobWorker {
 
     private static final String OUTBOUND_WORKER_KAFKA_TOPIC = "sales-chunkReplies";
 
-    private final RemoteChunkingWorkerBuilder<SalesInfoDTO, SalesInfoDTO> remoteChunkingWorkerBuilder;
+    private final RemoteChunkingWorkerBuilder<SalesInfoDTO, SalesInfoDTO> remoteChunkingWorkerBuilder = new RemoteChunkingWorkerBuilder<SalesInfoDTO, SalesInfoDTO>();
 
     private final KafkaTemplate<String, SalesInfoDTO> salesInfoKafkaTemplate;
 

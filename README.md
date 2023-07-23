@@ -3,11 +3,10 @@
 # Build Command
     ./gradlew clean build
 
-# Docker Command
-
+# 1 - Docker Command
     cd docker-files
     docker-compose up
 
-# Run Command
-    ./gradlew bootRun --args='--spring.profiles.active=manager'
+# 2 - Run Command
     ./gradlew bootRun --args='--spring.profiles.active=worker'
+    ./gradlew bootRun --args='--spring.profiles.active=manager'
