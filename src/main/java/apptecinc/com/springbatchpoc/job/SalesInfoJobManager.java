@@ -40,7 +40,9 @@ public class SalesInfoJobManager {
 
     private static final String INBOUND_KAFKA_TOPIC = "sales-chunkReplies";
 
-    private static final String INPUT_FILE = "/data/sales-info-small.csv";
+    private static final String INPUT_FILE = "/data/sales-info-200000.csv";
+
+    private static final Integer CHUNK_SIZE = 30;
 
     private final RemoteChunkingManagerStepBuilderFactory remoteChunkingManagerStepBuilderFactory;
 
@@ -59,7 +61,7 @@ public class SalesInfoJobManager {
     public TaskletStep salesInfoStepManager() {
         return this.remoteChunkingManagerStepBuilderFactory
                 .get("ReaderManagerStep")
-                .<SalesInfoDTO, SalesInfoDTO>chunk(1)
+                .<SalesInfoDTO, SalesInfoDTO>chunk(CHUNK_SIZE)
                 .reader(salesInfoReader())
                 .outputChannel(outboundChannel())
                 .inputChannel(inBoundChannel())

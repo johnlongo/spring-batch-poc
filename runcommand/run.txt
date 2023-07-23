@@ -1,1 +1,3 @@
 ./gradlew bootRun --args='--spring.profiles.active=manager'
+
+./gradlew clean build
