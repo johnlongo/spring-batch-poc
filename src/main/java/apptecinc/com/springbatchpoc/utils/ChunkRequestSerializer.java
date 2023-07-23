@@ -2,14 +2,17 @@ package apptecinc.com.springbatchpoc.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serializer;
+import org.springframework.batch.integration.chunk.ChunkRequest;
 import org.springframework.util.SerializationUtils;
 
-@Slf4j
-public class ChunkSerializer implements Serializer<Object> {
-    @Override
-    public byte[] serialize(String topic, Object data) {
+import apptecinc.com.springbatchpoc.dto.SalesInfoDTO;
 
-        if (data == null) {
+@Slf4j
+public class ChunkRequestSerializer implements Serializer<ChunkRequest<SalesInfoDTO>> {
+    @Override
+    public byte[] serialize(String s, ChunkRequest<SalesInfoDTO> chunkRequest) {
+
+        if (chunkRequest == null) {
             log.warn("cannot serialize data because the data is null");
             return new byte[0];
         }
@@ -17,8 +20,8 @@ public class ChunkSerializer implements Serializer<Object> {
         try {
             System.out.println(
                     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX "
-                            + data.toString());
-            dataBytes = SerializationUtils.serialize(data);
+                            + chunkRequest.toString());
+            dataBytes = SerializationUtils.serialize(chunkRequest);
         } catch (Exception e) {
             e.printStackTrace();
             log.error(e.getMessage());

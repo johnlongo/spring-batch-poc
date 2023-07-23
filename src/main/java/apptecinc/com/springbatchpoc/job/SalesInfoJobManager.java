@@ -42,7 +42,7 @@ public class SalesInfoJobManager {
 
     private static final String INPUT_FILE = "/data/sales-info-200000.csv";
 
-    private static final Integer CHUNK_SIZE = 30;
+    private static final Integer CHUNK_SIZE = 1000;
 
     private final RemoteChunkingManagerStepBuilderFactory remoteChunkingManagerStepBuilderFactory;
 
