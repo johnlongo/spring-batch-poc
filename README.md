@@ -1,5 +1,9 @@
 # Project: spring-batch-poc
 
+    from:   https://www.youtube.com/watch?v=alzvJt7ddc0
+            https://www.youtube.com/watch?v=VMFYsuc1uEg
+            https://www.youtube.com/watch?v=XzgiCiSgNc0
+
 # Build Command
     ./gradlew clean build
 
