@@ -36,11 +36,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SalesInfoJobManager {
 
-    private static final String OUTBOUND_KAFKA_TOPIC = "sales-chunkRequests";
+    private static final String OUTBOUND_MANAGER_KAFKA_TOPIC = "sales-chunkRequests";
 
-    private static final String INBOUND_KAFKA_TOPIC = "sales-chunkReplies";
+    private static final String INBOUND_MANAGER_KAFKA_TOPIC = "sales-chunkReplies";
 
-    private static final String INPUT_FILE = "/data/sales-info-200000.csv";
+    private static final String INPUT_FILE = "/data/sales-info-small.csv";
 
     private static final Integer CHUNK_SIZE = 1000;
 
@@ -91,7 +91,7 @@ public class SalesInfoJobManager {
     @Bean
     public IntegrationFlow outboudFlow() {
         var producerMessageHandler = new KafkaProducerMessageHandler<String, SalesInfoDTO>(salesInfoKafkaTemplate);
-        producerMessageHandler.setTopicExpression(new LiteralExpression(OUTBOUND_KAFKA_TOPIC));
+        producerMessageHandler.setTopicExpression(new LiteralExpression(OUTBOUND_MANAGER_KAFKA_TOPIC));
         return IntegrationFlows.from(outboundChannel())
                 .log(LoggingHandler.Level.WARN)
                 .handle(producerMessageHandler)
@@ -106,7 +106,7 @@ public class SalesInfoJobManager {
     @Bean
     public IntegrationFlow inBoundFlow(ConsumerFactory<String, SalesInfoDTO> consumerFactory) {
         return IntegrationFlows
-                .from(Kafka.messageDrivenChannelAdapter(consumerFactory, INBOUND_KAFKA_TOPIC))
+                .from(Kafka.messageDrivenChannelAdapter(consumerFactory, INBOUND_MANAGER_KAFKA_TOPIC))
                 .log(LoggingHandler.Level.WARN)
                 .channel(inBoundChannel())
                 .get();

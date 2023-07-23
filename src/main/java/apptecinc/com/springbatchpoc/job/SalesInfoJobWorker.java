@@ -1,26 +1,25 @@
 package apptecinc.com.springbatchpoc.job;
 
-import org.apache.kafka.common.requests.ProduceResponse.RecordError;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.integration.chunk.RemoteChunkingWorkerBuilder;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.integration.config.EnableIntegration;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.batch.core.step.item.ChunkProcessor;
-import org.springframework.batch.core.step.item.SimpleChunkProcessor;
-import org.springframework.batch.integration.chunk.ChunkProcessorChunkHandler;
-import org.springframework.batch.integration.chunk.RemoteChunkingWorkerBuilder;
-import org.springframework.batch.integration.config.annotation.EnableBatchIntegration;
-import org.springframework.batch.item.ItemProcessor;
-import org.springframework.batch.item.ItemWriter;
-import org.springframework.context.annotation.Bean;
-import org.springframework.integration.annotation.ServiceActivator;
+import org.springframework.expression.common.LiteralExpression;
 import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.channel.QueueChannel;
+import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
-import org.springframework.integration.dsl.MessageChannels;
+import org.springframework.integration.handler.LoggingHandler;
+import org.springframework.integration.kafka.dsl.Kafka;
+import org.springframework.integration.kafka.outbound.KafkaProducerMessageHandler;
+import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
+
 import apptecinc.com.springbatchpoc.dto.SalesInfoDTO;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Profile("worker")
 @Configuration
@@ -29,56 +28,57 @@ import apptecinc.com.springbatchpoc.dto.SalesInfoDTO;
 @RequiredArgsConstructor
 @Slf4j
 public class SalesInfoJobWorker {
-    /*
-     * private final MessageChannels messageChannel;
-     * private final RecordError recordProcessor;
-     * 
-     * @Bean
-     * public RemoteChunkingWorkerBuilder<SalesInfoDTO, SalesInfoDTO>
-     * remoteChunkingWorker() {
-     * return new RemoteChunkingWorkerBuilder<>();
-     * }
-     * 
-     * @Bean
-     * public ItemWriter<SalesInfoDTO> writer() {
-     * return items -> items.forEach(item -> log.info("Item writer: {}", item));
-     * }
-     * 
-     * @Bean
-     * public IntegrationFlow workerFlow() {
-     * return this.remoteChunkingWorker()
-     * .itemProcessor(recordProcessor)
-     * .itemWriter(writer())
-     * .inputChannel(requests()) // requests received from the manager
-     * .outputChannel(replies()) // replies sent to the manager
-     * .build();
-     * }
-     * 
-     * @Bean
-     * public DirectChannel requests() {
-     * return new DirectChannel();
-     * }
-     * 
-     * @Bean
-     * public IntegrationFlow inboundFlow() {
-     * return IntegrationFlows
-     * .from(messageChannel.clientRequests())
-     * .channel(requests())
-     * .get();
-     * }
-     * 
-     * @Bean
-     * public DirectChannel replies() {
-     * return new DirectChannel();
-     * }
-     * 
-     * @Bean
-     * public IntegrationFlow outboundFlow() {
-     * return IntegrationFlows
-     * .from(replies())
-     * .channel(messageChannel.clientReplies())
-     * .get();
-     * }
-     * 
-     */
+
+    private static final String INBOUND_WORKER_KAFKA_TOPIC = "sales-chunkRequests";
+
+    private static final String OUTBOUND_WORKER_KAFKA_TOPIC = "sales-chunkReplies";
+
+    private final RemoteChunkingWorkerBuilder<SalesInfoDTO, SalesInfoDTO> remoteChunkingWorkerBuilder;
+
+    private final KafkaTemplate<String, SalesInfoDTO> salesInfoKafkaTemplate;
+
+    @Bean
+    public IntegrationFlow salesWorkerStep() {
+        return this.remoteChunkingWorkerBuilder
+                .inputChannel(inBoundChannel())
+                .outputChannel(outboundChannel())
+                .itemProcessor(salesInfoDTO -> {
+                    log.info("Item Processing: {}", salesInfoDTO);
+                    return salesInfoDTO;
+                })
+                .itemWriter(items -> {
+                    log.info("Items Writing: {}", items);
+                })
+                .build();
+    }
+
+    @Bean
+    public QueueChannel inBoundChannel() {
+        return new QueueChannel();
+    }
+
+    @Bean
+    public IntegrationFlow inBoundFlow(ConsumerFactory<String, SalesInfoDTO> consumerFactory) {
+        return IntegrationFlows
+                .from(Kafka.messageDrivenChannelAdapter(consumerFactory, INBOUND_WORKER_KAFKA_TOPIC))
+                .log(LoggingHandler.Level.WARN)
+                .channel(inBoundChannel())
+                .get();
+    }
+
+    @Bean
+    public DirectChannel outboundChannel() {
+        return new DirectChannel();
+    }
+
+    @Bean
+    public IntegrationFlow outboudFlow() {
+        var producerMessageHandler = new KafkaProducerMessageHandler<String, SalesInfoDTO>(salesInfoKafkaTemplate);
+        producerMessageHandler.setTopicExpression(new LiteralExpression(OUTBOUND_WORKER_KAFKA_TOPIC));
+        return IntegrationFlows.from(outboundChannel())
+                .log(LoggingHandler.Level.WARN)
+                .handle(producerMessageHandler)
+                .get();
+    }
+
 }
