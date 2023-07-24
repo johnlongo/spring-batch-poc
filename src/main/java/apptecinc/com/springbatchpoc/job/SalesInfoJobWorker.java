@@ -45,7 +45,6 @@ public class SalesInfoJobWorker {
                     return salesInfoDTO;
                 })
                 .itemWriter(items -> {
-                    log.info("Items Writing: {}", items);
                 })
                 .build();
     }
