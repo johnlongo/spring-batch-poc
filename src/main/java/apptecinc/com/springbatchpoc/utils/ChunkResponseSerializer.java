@@ -16,9 +16,6 @@ public class ChunkResponseSerializer implements Serializer<ChunkResponse> {
         }
         byte[] dataBytes = null;
         try {
-            System.out.println(
-                    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX "
-                            + chunkResponse.toString());
             dataBytes = SerializationUtils.serialize(chunkResponse);
         } catch (Exception e) {
             e.printStackTrace();

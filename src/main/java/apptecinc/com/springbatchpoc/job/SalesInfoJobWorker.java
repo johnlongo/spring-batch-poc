@@ -30,11 +30,9 @@ import lombok.extern.slf4j.Slf4j;
 public class SalesInfoJobWorker {
 
     private static final String INBOUND_WORKER_KAFKA_TOPIC = "sales-chunkRequests";
-
     private static final String OUTBOUND_WORKER_KAFKA_TOPIC = "sales-chunkReplies";
 
     private final RemoteChunkingWorkerBuilder<SalesInfoDTO, SalesInfoDTO> remoteChunkingWorkerBuilder = new RemoteChunkingWorkerBuilder<SalesInfoDTO, SalesInfoDTO>();
-
     private final KafkaTemplate<String, SalesInfoDTO> salesInfoKafkaTemplate;
 
     @Bean

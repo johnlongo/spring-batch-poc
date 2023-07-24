@@ -18,9 +18,6 @@ public class ChunkRequestSerializer implements Serializer<ChunkRequest<SalesInfo
         }
         byte[] dataBytes = null;
         try {
-            System.out.println(
-                    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX "
-                            + chunkRequest.toString());
             dataBytes = SerializationUtils.serialize(chunkRequest);
         } catch (Exception e) {
             e.printStackTrace();

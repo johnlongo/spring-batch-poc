@@ -37,15 +37,11 @@ import lombok.RequiredArgsConstructor;
 public class SalesInfoJobManager {
 
     private static final String OUTBOUND_MANAGER_KAFKA_TOPIC = "sales-chunkRequests";
-
     private static final String INBOUND_MANAGER_KAFKA_TOPIC = "sales-chunkReplies";
-
     private static final String INPUT_FILE = "/data/sales-info-small.csv";
-
     private static final Integer CHUNK_SIZE = 1000;
 
     private final RemoteChunkingManagerStepBuilderFactory remoteChunkingManagerStepBuilderFactory;
-
     private final KafkaTemplate<String, SalesInfoDTO> salesInfoKafkaTemplate;
 
     @Bean
