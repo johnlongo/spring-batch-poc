@@ -12,7 +12,8 @@
     monitor Kafka http://localhost:8080/ui/docker-kafka-server/topic
 
 # 2 - Run Command start one or more workers
+    Important delete two topics before you start the worker
     ./gradlew bootRun --args='--spring.profiles.active=worker'
 
-# 3 - Run Command start the manager    
+# 3 - Run Command start the manager  
     ./gradlew bootRun --args='--spring.profiles.active=manager'
