@@ -36,11 +36,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SalesInfoJobManager {
 
-    private static final String OUTBOUND_MANAGER_KAFKA_TOPIC = "sales-chunkRequests";
-    private static final String INBOUND_MANAGER_KAFKA_TOPIC = "sales-chunkReplies";
-    private static final String INPUT_FILE = "/data/sales-info-small.csv";
-    private static final Integer CHUNK_SIZE = 1000;
-
     private final RemoteChunkingManagerStepBuilderFactory remoteChunkingManagerStepBuilderFactory;
     private final KafkaTemplate<String, SalesInfoDTO> salesInfoKafkaTemplate;
 
@@ -57,7 +52,7 @@ public class SalesInfoJobManager {
     public TaskletStep salesInfoStepManager() {
         return this.remoteChunkingManagerStepBuilderFactory
                 .get("ReaderManagerStep")
-                .<SalesInfoDTO, SalesInfoDTO>chunk(CHUNK_SIZE)
+                .<SalesInfoDTO, SalesInfoDTO>chunk(JobConstants.MANAGER_CHUNK_SIZE)
                 .reader(salesInfoReader())
                 .outputChannel(outboundChannel())
                 .inputChannel(inBoundChannel())
@@ -67,7 +62,7 @@ public class SalesInfoJobManager {
 
     public FlatFileItemReader<SalesInfoDTO> salesInfoReader() {
         return new FlatFileItemReaderBuilder<SalesInfoDTO>()
-                .resource(new ClassPathResource(INPUT_FILE))
+                .resource(new ClassPathResource(JobConstants.MANAGER_INPUT_FILE))
                 .name("salesInfoReader")
                 .delimited()
                 .delimiter(",")
@@ -87,7 +82,7 @@ public class SalesInfoJobManager {
     @Bean
     public IntegrationFlow outboudFlow() {
         var producerMessageHandler = new KafkaProducerMessageHandler<String, SalesInfoDTO>(salesInfoKafkaTemplate);
-        producerMessageHandler.setTopicExpression(new LiteralExpression(OUTBOUND_MANAGER_KAFKA_TOPIC));
+        producerMessageHandler.setTopicExpression(new LiteralExpression(JobConstants.MANAGER_OUTBOUND_KAFKA_TOPIC));
         return IntegrationFlows.from(outboundChannel())
                 .log(LoggingHandler.Level.WARN)
                 .handle(producerMessageHandler)
@@ -102,7 +97,7 @@ public class SalesInfoJobManager {
     @Bean
     public IntegrationFlow inBoundFlow(ConsumerFactory<String, SalesInfoDTO> consumerFactory) {
         return IntegrationFlows
-                .from(Kafka.messageDrivenChannelAdapter(consumerFactory, INBOUND_MANAGER_KAFKA_TOPIC))
+                .from(Kafka.messageDrivenChannelAdapter(consumerFactory, JobConstants.MANAGER_INBOUND_KAFKA_TOPIC))
                 .log(LoggingHandler.Level.WARN)
                 .channel(inBoundChannel())
                 .get();

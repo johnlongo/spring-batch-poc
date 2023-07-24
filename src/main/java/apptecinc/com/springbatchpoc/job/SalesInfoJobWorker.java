@@ -29,9 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SalesInfoJobWorker {
 
-    private static final String INBOUND_WORKER_KAFKA_TOPIC = "sales-chunkRequests";
-    private static final String OUTBOUND_WORKER_KAFKA_TOPIC = "sales-chunkReplies";
-
     private final RemoteChunkingWorkerBuilder<SalesInfoDTO, SalesInfoDTO> remoteChunkingWorkerBuilder = new RemoteChunkingWorkerBuilder<SalesInfoDTO, SalesInfoDTO>();
     private final KafkaTemplate<String, SalesInfoDTO> salesInfoKafkaTemplate;
 
@@ -57,7 +54,7 @@ public class SalesInfoJobWorker {
     @Bean
     public IntegrationFlow inBoundFlow(ConsumerFactory<String, SalesInfoDTO> consumerFactory) {
         return IntegrationFlows
-                .from(Kafka.messageDrivenChannelAdapter(consumerFactory, INBOUND_WORKER_KAFKA_TOPIC))
+                .from(Kafka.messageDrivenChannelAdapter(consumerFactory, JobConstants.WORKER_INBOUND_KAFKA_TOPIC))
                 .log(LoggingHandler.Level.WARN)
                 .channel(inBoundChannel())
                 .get();
@@ -71,7 +68,7 @@ public class SalesInfoJobWorker {
     @Bean
     public IntegrationFlow outboudFlow() {
         var producerMessageHandler = new KafkaProducerMessageHandler<String, SalesInfoDTO>(salesInfoKafkaTemplate);
-        producerMessageHandler.setTopicExpression(new LiteralExpression(OUTBOUND_WORKER_KAFKA_TOPIC));
+        producerMessageHandler.setTopicExpression(new LiteralExpression(JobConstants.WORKER_OUTBOUND_KAFKA_TOPIC));
         return IntegrationFlows.from(outboundChannel())
                 .log(LoggingHandler.Level.WARN)
                 .handle(producerMessageHandler)
